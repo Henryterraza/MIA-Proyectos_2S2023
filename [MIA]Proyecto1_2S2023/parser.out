@@ -1,0 +1,225 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    FIT
+    PATH
+    SIZE
+    UNIT
+
+Grammar
+
+Rule 0     S' -> param
+Rule 1     param -> CADENA parametros
+Rule 2     parametros -> parametros parametro
+Rule 3     parametros -> parametro
+Rule 4     parametros -> empty
+Rule 5     parametro -> MENOS CADENA IGUAL RUTA
+Rule 6     parametro -> MENOS CADENA IGUAL COMILLA RUTA COMILLA
+Rule 7     parametro -> MENOS CADENA IGUAL COMILLA CADENA COMILLA
+Rule 8     parametro -> MENOS CADENA IGUAL CADENA
+Rule 9     parametro -> MENOS CADENA IGUAL ENTERO
+Rule 10    empty -> <empty>
+
+Terminals, with rules where they appear
+
+CADENA               : 1 5 6 7 7 8 8 9
+COMILLA              : 6 6 7 7
+ENTERO               : 9
+FIT                  : 
+IGUAL                : 5 6 7 8 9
+MENOS                : 5 6 7 8 9
+PATH                 : 
+RUTA                 : 5 6
+SIZE                 : 
+UNIT                 : 
+error                : 
+
+Nonterminals, with rules where they appear
+
+empty                : 4
+param                : 0
+parametro            : 2 3
+parametros           : 1 2
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . param
+    (1) param -> . CADENA parametros
+
+    CADENA          shift and go to state 2
+
+    param                          shift and go to state 1
+
+state 1
+
+    (0) S' -> param .
+
+
+
+state 2
+
+    (1) param -> CADENA . parametros
+    (2) parametros -> . parametros parametro
+    (3) parametros -> . parametro
+    (4) parametros -> . empty
+    (5) parametro -> . MENOS CADENA IGUAL RUTA
+    (6) parametro -> . MENOS CADENA IGUAL COMILLA RUTA COMILLA
+    (7) parametro -> . MENOS CADENA IGUAL COMILLA CADENA COMILLA
+    (8) parametro -> . MENOS CADENA IGUAL CADENA
+    (9) parametro -> . MENOS CADENA IGUAL ENTERO
+    (10) empty -> .
+
+  ! shift/reduce conflict for MENOS resolved as shift
+    MENOS           shift and go to state 6
+    $end            reduce using rule 10 (empty -> .)
+
+  ! MENOS           [ reduce using rule 10 (empty -> .) ]
+
+    parametros                     shift and go to state 3
+    parametro                      shift and go to state 4
+    empty                          shift and go to state 5
+
+state 3
+
+    (1) param -> CADENA parametros .
+    (2) parametros -> parametros . parametro
+    (5) parametro -> . MENOS CADENA IGUAL RUTA
+    (6) parametro -> . MENOS CADENA IGUAL COMILLA RUTA COMILLA
+    (7) parametro -> . MENOS CADENA IGUAL COMILLA CADENA COMILLA
+    (8) parametro -> . MENOS CADENA IGUAL CADENA
+    (9) parametro -> . MENOS CADENA IGUAL ENTERO
+
+    $end            reduce using rule 1 (param -> CADENA parametros .)
+    MENOS           shift and go to state 6
+
+    parametro                      shift and go to state 7
+
+state 4
+
+    (3) parametros -> parametro .
+
+    MENOS           reduce using rule 3 (parametros -> parametro .)
+    $end            reduce using rule 3 (parametros -> parametro .)
+
+
+state 5
+
+    (4) parametros -> empty .
+
+    MENOS           reduce using rule 4 (parametros -> empty .)
+    $end            reduce using rule 4 (parametros -> empty .)
+
+
+state 6
+
+    (5) parametro -> MENOS . CADENA IGUAL RUTA
+    (6) parametro -> MENOS . CADENA IGUAL COMILLA RUTA COMILLA
+    (7) parametro -> MENOS . CADENA IGUAL COMILLA CADENA COMILLA
+    (8) parametro -> MENOS . CADENA IGUAL CADENA
+    (9) parametro -> MENOS . CADENA IGUAL ENTERO
+
+    CADENA          shift and go to state 8
+
+
+state 7
+
+    (2) parametros -> parametros parametro .
+
+    MENOS           reduce using rule 2 (parametros -> parametros parametro .)
+    $end            reduce using rule 2 (parametros -> parametros parametro .)
+
+
+state 8
+
+    (5) parametro -> MENOS CADENA . IGUAL RUTA
+    (6) parametro -> MENOS CADENA . IGUAL COMILLA RUTA COMILLA
+    (7) parametro -> MENOS CADENA . IGUAL COMILLA CADENA COMILLA
+    (8) parametro -> MENOS CADENA . IGUAL CADENA
+    (9) parametro -> MENOS CADENA . IGUAL ENTERO
+
+    IGUAL           shift and go to state 9
+
+
+state 9
+
+    (5) parametro -> MENOS CADENA IGUAL . RUTA
+    (6) parametro -> MENOS CADENA IGUAL . COMILLA RUTA COMILLA
+    (7) parametro -> MENOS CADENA IGUAL . COMILLA CADENA COMILLA
+    (8) parametro -> MENOS CADENA IGUAL . CADENA
+    (9) parametro -> MENOS CADENA IGUAL . ENTERO
+
+    RUTA            shift and go to state 11
+    COMILLA         shift and go to state 12
+    CADENA          shift and go to state 10
+    ENTERO          shift and go to state 13
+
+
+state 10
+
+    (8) parametro -> MENOS CADENA IGUAL CADENA .
+
+    MENOS           reduce using rule 8 (parametro -> MENOS CADENA IGUAL CADENA .)
+    $end            reduce using rule 8 (parametro -> MENOS CADENA IGUAL CADENA .)
+
+
+state 11
+
+    (5) parametro -> MENOS CADENA IGUAL RUTA .
+
+    MENOS           reduce using rule 5 (parametro -> MENOS CADENA IGUAL RUTA .)
+    $end            reduce using rule 5 (parametro -> MENOS CADENA IGUAL RUTA .)
+
+
+state 12
+
+    (6) parametro -> MENOS CADENA IGUAL COMILLA . RUTA COMILLA
+    (7) parametro -> MENOS CADENA IGUAL COMILLA . CADENA COMILLA
+
+    RUTA            shift and go to state 15
+    CADENA          shift and go to state 14
+
+
+state 13
+
+    (9) parametro -> MENOS CADENA IGUAL ENTERO .
+
+    MENOS           reduce using rule 9 (parametro -> MENOS CADENA IGUAL ENTERO .)
+    $end            reduce using rule 9 (parametro -> MENOS CADENA IGUAL ENTERO .)
+
+
+state 14
+
+    (7) parametro -> MENOS CADENA IGUAL COMILLA CADENA . COMILLA
+
+    COMILLA         shift and go to state 16
+
+
+state 15
+
+    (6) parametro -> MENOS CADENA IGUAL COMILLA RUTA . COMILLA
+
+    COMILLA         shift and go to state 17
+
+
+state 16
+
+    (7) parametro -> MENOS CADENA IGUAL COMILLA CADENA COMILLA .
+
+    MENOS           reduce using rule 7 (parametro -> MENOS CADENA IGUAL COMILLA CADENA COMILLA .)
+    $end            reduce using rule 7 (parametro -> MENOS CADENA IGUAL COMILLA CADENA COMILLA .)
+
+
+state 17
+
+    (6) parametro -> MENOS CADENA IGUAL COMILLA RUTA COMILLA .
+
+    MENOS           reduce using rule 6 (parametro -> MENOS CADENA IGUAL COMILLA RUTA COMILLA .)
+    $end            reduce using rule 6 (parametro -> MENOS CADENA IGUAL COMILLA RUTA COMILLA .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for MENOS in state 2 resolved as shift

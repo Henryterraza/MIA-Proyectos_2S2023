@@ -1,0 +1,43 @@
+crear disco
+
+
+mkdisk -size=10 -unit=M -path="/home/misdiscos/Disco5.dsk"
+
+
+
+
+fdisk -size=200 -add=10  -type=E -unit=K -path="/home/misdiscos/Disco5.dsk" -name="Particion5"
+fdisk -size=100 -add=10  -type=P -unit=K -path="/home/misdiscos/Disco5.dsk" -name="Particion6"
+fdisk -size=1 -add=10  -type=L -unit=K -path="/home/misdiscos/Disco5.dsk" -name="Particion2"
+fdisk -delete=full -path=/home/misdiscos/Disco5.dsk -name="Particion2" 
+
+
+crear particiones 
+
+
+
+fdisk -size=10 -path="/home/misdiscos/Disco5.dsk" -name=Particion1
+fdisk -size=100 -path="/home/misdiscos/Disco5.dsk" -name=Particion8
+fdisk -type=E -path="/home/misdiscos/Disco5.dsk" -unit=K -name=Particion2 -size=10
+fdisk -size=1 -type=L -unit=K -fit=BF -path="/home/misdiscos/Disco5.dsk" -name="Particion3"
+fdisk -type=E -path="/home/misdiscos/Disco5.dsk" -name=Part3 -unit=K -size=10
+fdisk -delete=full -name="Particion2" -path="/home/misdiscos/Disco5.dsk"
+fdisk -name=Particion2 -delete=full -path="/home/misdiscos/Disco5.dsk"
+fdisk -add=-500 -size=10 -unit=K -path="/home/misdiscos/Disco5.dsk" -name=”Particion4”
+fdisk -add=1 -unit=M -path="/home/misdiscos/Disco5.dsk" -name="Particion4"
+
+mount -path="/home/misdiscos/Disco5.dsk" -name=Particion1
+mount -path="/home/misdiscos/Disco5.dsk" -name=Particion2
+mount -path="/home/misdiscos/Disco5.dsk" -name=Particion3
+mount -path="/home/misdiscos/Disco5.dsk" -name=Particion4
+
+unmount -id=621Disco5
+unmount -id=622Disco5
+unmount -id=623Disco5
+
+
+rep -id=621Disco5 -path=/home/user/reports/reporte1.jpg -name=mbr
+rep -id=621Disco5 -path=/home/user/reports/report2.pdf -name=disk
+
+
+mkfs -type=full -id=621Disco5 -fs=2fs
