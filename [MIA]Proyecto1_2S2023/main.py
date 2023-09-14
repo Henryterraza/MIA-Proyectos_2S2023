@@ -2,6 +2,9 @@ from sintactico import parser
 from Structs.structs import MBR, particion
 from Structs.struct_EBR import EBR
 from Structs.structmount import mount
+from Structs.strSuperBlock import SuperBlock
+from Structs.StrInodos import Inodo
+from Structs.StrBloques import Carpeta, Archivo, Apuntadores 
 from graphviz import Digraph
 import os
 import datetime
@@ -84,13 +87,20 @@ def comando_mkfs(ListComand):
         IdExist = buscar_id(id)
 
         if IdExist != None:
-            pass
+            if fs == "2fs":
+                pass
+            else:
+                pass
+
+
+            # int = floor(10)
+
+
         else:
             print("id no encontrado")
 
     else:
         print("El comando requiere del parametro id")
-
 
 def comando_rep(ListComand):
     if "name" in ListComand and "path" in ListComand and "id" in ListComand:
@@ -99,7 +109,7 @@ def comando_rep(ListComand):
         id = ListComand[ListComand.index("id") + 1]
         IdExist = buscar_id(id)
 
-        if IdExist != None:
+        if IdExist != None and IdExist.status != 0 :
             PathDSK = IdExist.path
 
             if name == "mbr":
@@ -152,14 +162,23 @@ def reporte_disk(path, PathDSK, IdExist):
         if particion.type == "P":
             if particion_sig.status == "1" or particion_sig.status == "E":
                 if res == sizePart:
-                    porcent = (sizePart * 100) / TamanoDSK
-                    ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
-                else:
-                    porcent = (sizePart * 100) / TamanoDSK
-                    ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
+                    if particion.status != "E":
+                        porcent = (sizePart * 100) / TamanoDSK
+                        ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
+                    else:
+                        porcent = (sizePart * 100) / TamanoDSK
+                        ContenidoPNG += f"|Libre\\n{round(porcent, 3)}%"
 
-                    porcent = (res - sizePart * 100) / TamanoDSK
-                    ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+                else:
+                    if particion.status != "E":
+                        porcent = (sizePart * 100) / TamanoDSK
+                        ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
+
+                        porcent = ((res - sizePart) * 100) / TamanoDSK
+                        ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+                    else:
+                        porcent = (res * 100) / TamanoDSK
+                        ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
             else:
                 porcent = (sizePart * 100) / TamanoDSK
                 ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
@@ -170,22 +189,14 @@ def reporte_disk(path, PathDSK, IdExist):
         elif particion.type == "E":
             ContenidoPNG += "|{Extendida|{"
 
-            if (
-                particion_sig.status == "1" or particion_sig.status == "E"
-            ):  # verifica si existe otra particion despues de la extendida
-                if (
-                    res == sizePart
-                ):  # como existe otra particion verifica si el tamano es completo o proporcinal
+            if (particion_sig.status == "1" or particion_sig.status == "E"):  # verifica si existe otra particion despues de la extendida
+                if (res == sizePart):  # como existe otra particion verifica si el tamano es completo o proporcinal
                     # ContenidoPNG += '|{Extendida|{'
 
-                    ContenidoPNG += ExtendidaPNG(
-                        SeekInicio, PathDSK, TamanoDSK, sizePart
-                    )
+                    ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
 
                 else:
-                    ContenidoPNG += ExtendidaPNG(
-                        SeekInicio, PathDSK, TamanoDSK, sizePart
-                    )
+                    ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
 
                     porcent = (res - sizePart * 100) / TamanoDSK
                     ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
@@ -209,20 +220,32 @@ def reporte_disk(path, PathDSK, IdExist):
         res = SeekInicio_sig - SeekInicio
 
         if particion.type == "P":
-            porcent = (sizePart * 100) / TamanoDSK
-            ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
 
-            porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
-            ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+            if particion.status != "E":
+                porcent = (sizePart * 100) / TamanoDSK
+                ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
+
+                porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
+                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+            else:
+                porcent = ((TamanoDSK - SeekInicio) * 100) / TamanoDSK
+                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+
 
         elif particion.type == "E":
             ContenidoPNG += "|{Extendida|{"
 
-            ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
 
-            # Este codigo va al final por si no existe otra particion al final de particion extendida
-            porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
-            ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+            if particion.status != "E":
+                ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
+
+                # Este codigo va al final por si no existe otra particion al final de particion extendida
+                porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
+                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+            else:
+                porcent = ((TamanoDSK - SeekInicio) * 100) / TamanoDSK
+                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+                
 
     ContenidoPNG += """}"];}"""
 
@@ -247,22 +270,35 @@ def ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart):
                 restEBR = objetoEBR.next - objetoEBR.start
 
                 if restEBR == objetoEBR.size:
-                    porcent = ((objetoEBR.size) * 100) / TamanoDSK
-                    ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
+                    if objetoEBR.status != "E":
+                        porcent = ((objetoEBR.size) * 100) / TamanoDSK
+                        ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
+                    else:
+                        porcent = ((objetoEBR.size) * 100) / TamanoDSK
+                        ContenidoPNG += f"Libre\n{round(porcent, 3)}%|"
+
                 else:
-                    porcent = ((objetoEBR.size) * 100) / TamanoDSK
-                    ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
-                    porcent = ((restEBR - objetoEBR.size) * 100) / TamanoDSK
-                    ContenidoPNG += f"Libre\\n{round(porcent, 3)}%|"
+                    if objetoEBR.status != "E":
+                        porcent = ((objetoEBR.size) * 100) / TamanoDSK
+                        ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
+                        porcent = ((restEBR - objetoEBR.size) * 100) / TamanoDSK
+                        ContenidoPNG += f"Libre\\n{round(porcent, 3)}%|"
+                    else:
+                        porcent = ((objetoEBR.size) * 100) / TamanoDSK
+                        ContenidoPNG += f"Libre\\n{round(porcent, 3)}%|"
 
                 SeekEBRNext = objetoEBR.next
 
             else:
-                porcent = ((objetoEBR.size) * 100) / TamanoDSK
-                ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
-
-                porcent = ((sizePart - EspLibreExt) * 100) / TamanoDSK
-                ContenidoPNG += f"Libre\\n{round(porcent, 3)}%" + "}}"
+                if objetoEBR.status != "E":
+                    porcent = ((objetoEBR.size) * 100) / TamanoDSK
+                    ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
+                    porcent = ((sizePart - EspLibreExt) * 100) / TamanoDSK
+                    ContenidoPNG += f"Libre\\n{round(porcent, 3)}%" + "}}"
+                else:
+                    porcent = ((sizePart) * 100) / TamanoDSK
+                    ContenidoPNG += f"Libre\\n{round(porcent, 3)}%" + "}}"
+                
                 existeEBR = False
 
         else:
@@ -582,6 +618,12 @@ def comando_mount(ListComand):
                     print(
                         f"Ya existe la montacion de la particion {name} su id es: {id} "
                     )
+
+            print("\nMontaciones actuales:", end= " ")
+
+            for Mount in ListMount:
+                if Mount.status != 0:
+                    print(Mount.id, end="  ")
 
         else:
             print("Montacion no realizada particion no existe")
@@ -1119,8 +1161,19 @@ def eliminar_archivo(path):
     # Verificar si el archivo se creó correctamente
     if os.path.exists(path):
         # Ejecutar el comando para eliminar el archivo utilizando os.system
-        os.system(comando_eliminar_directorio)
-        print("Disco duro eliminado con exito")
+       while True:
+            entrada = input("Deseea eliminar el disco (y/n)")
+
+            if entrada == "Y" or entrada == "y":
+                os.system(comando_eliminar_directorio)
+                print("Disco duro eliminado con exito")
+                break
+            elif entrada == "N" or entrada == "n":
+                print("No se elimino el disco duro")
+                break
+            else:
+                print("Entrada inválida. Presione (y/n).")
+        
     else:
         print("No existe el disco duro")
 
