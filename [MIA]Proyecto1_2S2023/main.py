@@ -266,7 +266,115 @@ def comando_rep(ListComand):
         print("El comando rep requiere de los parametros name, path, id")
 
 def reporte_inode(path, PathDSK, IdExist):
-    pass
+    seekInicio = IdExist.SeekDSKInicio
+    seekFin = IdExist.SeekDSKFin
+
+    byte_recivido = OptenerByte_archivo(PathDSK, seekInicio, (seekFin - seekInicio))
+
+    if byte_recivido != None:
+
+        temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+
+        Objeto_Reciv = temp.set_bytes(byte_recivido)
+
+        if IdExist.tipo != "E":
+            if Objeto_Reciv.filesystem_type != 0:
+
+                seekInodeInit = Objeto_Reciv.inode_start
+                cantInodes = Objeto_Reciv.inodes_count
+                tamanoInodes = Objeto_Reciv.inode_s
+
+                byte_recivido = OptenerByte_archivo(PathDSK, seekInodeInit, (cantInodes * tamanoInodes) )
+
+                # ListInodos = []
+                ContenidoPNG = ''
+                cont = 1
+                seekInode = seekInodeInit
+                for count in range(cantInodes):
+
+                    byte_recivido = OptenerByte_archivo(PathDSK, seekInode, tamanoInodes )
+
+                    temp = Inodo(0,0,0,0,0,0,"",0)
+
+                    Objeto_inode = temp.set_bytes(byte_recivido)
+
+
+                    ContenidoPNG += ("""node [shape=plaintext];
+                    // Crea un nodo con una tabla HTML de 2 columnas
+                        subgraph cluster_level1 {"""
+                        + f"""
+                    label = "Inodo {cont}";
+                    nodo{cont} [label=<
+                        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">
+                            <TR>
+                            <TD colspan="2"> inodo</TD>
+                        </TR>
+                        <TR>
+                            <TD>i_uid </TD>
+                            <TD>{Objeto_inode.uid}</TD>
+                        </TR>
+                        <TR>
+                            <TD>I_gid</TD>
+                            <TD>{Objeto_inode.gid}</TD>
+                        </TR>
+                        <TR>
+                            <TD>i_s </TD>
+                            <TD>{Objeto_inode.size}</TD>
+                        </TR>
+                        <TR>
+                            <TD>i_atime</TD>
+                            <TD>{Objeto_inode.atime }</TD>
+                        </TR>
+                        <TR>
+                            <TD>i_ctime </TD>
+                            <TD>{Objeto_inode.ctime }</TD>
+                        </TR>
+                        <TR>
+                            <TD>i_mtime   </TD>
+                            <TD>{Objeto_inode.mtime }</TD>
+                        </TR>
+                        <TR>
+                            <TD>i_type </TD>
+                            <TD>{Objeto_inode.type}</TD>
+                        </TR>
+                        <TR>
+                            <TD>i_perm </TD>
+                            <TD>{Objeto_inode.perm }</TD>
+                        </TR>"""
+                        )
+                    cont2 = 1
+                    for ino in Objeto_inode.blocks:
+
+                        ContenidoPNG += (f"""
+                        <TR>
+                            <TD>apt{cont2}  </TD>
+                            <TD>{ino}</TD>
+                        </TR>"""
+                        )
+
+                        cont += 1
+                
+
+                    ContenidoPNG += (
+                            """    </TABLE>
+                            >]; }"""
+                        )
+                    
+                    cont += 1
+                    seekInode += tamanoInodes
+                    
+                
+
+                Generar_png(path, ContenidoPNG)
+                    
+
+                print("Reporte de inodes generado con exito")
+
+            else:
+                print("No existe un formateo  EXT2/EXT3 en esta particion")
+        else:
+            print("No se puede realizar el reporte inode es una particion Extendida")
+
 
 def reporte_bm_inode(path, PathDSK, IdExist):
     seekInicio = IdExist.SeekDSKInicio
