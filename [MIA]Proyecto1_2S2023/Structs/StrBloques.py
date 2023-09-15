@@ -48,8 +48,8 @@ class Carpeta(Objeto):
         self.ApuntActual = int.from_bytes(bytes[28:32], byteorder="big")
         self.NameCarpArch1 = bytes[32:44].decode("utf-8").rstrip("\x00")
         self.NameCarpArch2 = bytes[44:56].decode("utf-8").rstrip("\x00")
-        self.Apun1 = int.from_bytes(bytes[56:60], byteorder="big")
-        self.Apunt2 = int.from_bytes(bytes[60:64], byteorder="big")
+        self.Apun1 = int.from_bytes(bytes[56:60], byteorder="big", signed=True)
+        self.Apunt2 = int.from_bytes(bytes[60:64], byteorder="big", signed=True)
 
         return self
 

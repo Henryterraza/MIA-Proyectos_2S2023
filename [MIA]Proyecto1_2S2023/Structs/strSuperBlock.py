@@ -50,6 +50,7 @@ class SuperBlock(Objeto):
         bytes += self.bm_inode_start.to_bytes(4, byteorder='big')         
         bytes += self.bm_block_start.to_bytes(4, byteorder='big')         
         bytes += self.inode_start.to_bytes(4, byteorder='big')            
+        bytes += self.block_start.to_bytes(4, byteorder='big')            
         return bytes
 
     def set_bytes(self, bytes):
@@ -69,25 +70,12 @@ class SuperBlock(Objeto):
         self.bm_inode_start = int.from_bytes(bytes[52:56], byteorder='big')
         self.bm_block_start = int.from_bytes(bytes[56:60], byteorder='big')
         self.inode_start = int.from_bytes(bytes[60:64], byteorder='big')
+        self.block_start = int.from_bytes(bytes[64:68], byteorder='big')
+        
         return self
 
     def get_size(self):
         size = 0
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
-        size += 4
+        size += 4 * 17
         return size
         

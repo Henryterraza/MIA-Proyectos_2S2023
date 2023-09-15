@@ -5,64 +5,93 @@ from Structs.structmount import mount
 from Structs.strSuperBlock import SuperBlock
 from Structs.StrInodos import Inodo
 from Structs.StrBloques import Carpeta, Archivo, Apuntadores 
+from Structs.StrJournaling import Journaling
 from graphviz import Digraph
 import os
 import datetime
 import random
 import subprocess
+import math
 
 ListMount = []
 
 
 def menu():
-    mi_lista = [1, 2, 3, 4, 5]
-
-    # Obtener el tamaño (longitud) de la lista
-    tamaño = len(mi_lista)
-
-    print("Tamaño de la lista:", tamaño)
+  
     while True:
         comando = input("\nIngrese comando: ")
         result = parser.parse(comando)
         print(result)
 
-        ListComand = result[1]
+        ListComand = result[0][1]
 
-        if result[0] == "mkdisk":
-            comando_mkdisk(ListComand)
-
-        elif result[0] == "rmdisk":
+        if result[0][0] == "execute":
             if "path" in ListComand:
                 path = ListComand[ListComand.index("path") + 1]
-                eliminar_archivo(path)
-            else:
-                print("comando requiere del path")
-        elif result[0] == "fdisk":
-            comando_fdisk(ListComand)
-        elif result[0] == "mount":
-            comando_mount(ListComand)
-        elif result[0] == "unmount":
-            comando_unmount(ListComand)
-        elif result[0] == "rep":
-            comando_rep(ListComand)
-        elif result[0] == "mkfs":
-            comando_mkfs(ListComand)
 
-        elif result[0] == "pause":
-            if result[1] == None:
-                while True:
-                    entrada = input("Presione Enter para continuar...")
+                respuesta = Obtener_Cont_Archivo(path)
 
-                    if entrada == "":
-                        break
-                    else:
-                        print("Entrada inválida. Solo presione Enter.")
+                if respuesta != None:
+                    result2 = parser.parse(respuesta)
+                    for comando in result2:
+                        print(comando)
+                        verificar_Comando(comando[0], comando[1])
+                else:
+                    print("No existe el archivo")
             else:
-                print("comando pausa no requiere de parametros")
+                print("El comando execute requiere del parametro path")
         else:
-            print("comando no aceptado")
+            verificar_Comando(result[0][0], ListComand)
 
 
+       
+
+def verificar_Comando(comando, ListComand):
+    if comando== "mkdisk":
+        comando_mkdisk(ListComand)
+
+    elif comando == "rmdisk":
+        if "path" in ListComand:
+            path = ListComand[ListComand.index("path") + 1]
+            eliminar_archivo(path)
+        else:
+            print("comando requiere del path")
+    elif comando == "fdisk":
+        comando_fdisk(ListComand)
+    elif comando == "mount":
+        comando_mount(ListComand)
+    elif comando == "unmount":
+        comando_unmount(ListComand)
+    elif comando == "rep":
+        comando_rep(ListComand)
+    elif comando == "mkfs":
+        comando_mkfs(ListComand)
+
+    elif comando == "pause":
+        if ListComand == None:
+            while True:
+                entrada = input("Presione Enter para continuar...")
+
+                if entrada == "":
+                    break
+                else:
+                    print("Entrada inválida. Solo presione Enter.")
+        else:
+            print("comando pausa no requiere de parametros")
+    else:
+        print("comando no aceptado")
+
+def Obtener_Cont_Archivo(path):
+    contenido = ""
+    if os.path.exists(path):
+        with open(path, "r") as archivo:
+            contenido = archivo.read()
+
+    else:
+        contenido = None
+    
+    return contenido
+    
 def comando_mkfs(ListComand):
     if "id" in ListComand:
         id = ListComand[ListComand.index("id") + 1]
@@ -86,18 +115,120 @@ def comando_mkfs(ListComand):
 
         IdExist = buscar_id(id)
 
-        if IdExist != None:
-            if fs == "2fs":
-                pass
+        if IdExist.tipo != "E":
+
+            if IdExist != None and IdExist.status != 0:
+                seekInicio = IdExist.SeekDSKInicio
+                seekFin = IdExist.SeekDSKFin
+                path = IdExist.path
+
+                
+                if fs == "2fs":
+                    byteParticion = OptenerByte_archivo(path, seekInicio, seekFin - seekInicio)
+                    
+                    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+
+                    Objeto = temp.set_bytes(byteParticion)
+
+
+                    if Objeto.filesystem_type == 0:
+                        # n = (tamaño_particion - sizeOf(superblock) / (1 + 3 * 1 + 1 * sizeOf(inodos) + 3 *1 * sizeOf(block))
+                        n = ((seekFin-seekInicio) - 68) / (1+3+89+(3*64))
+                        numero_structuras = math.floor(n)
+
+                        PInodo= (seekInicio + 68 + numero_structuras) + (numero_structuras * 3)
+                        pBloque= PInodo + (numero_structuras * 89)
+
+                        Sup_Block = SuperBlock(2, numero_structuras, 3* numero_structuras, 3*numero_structuras, numero_structuras, 0, 0, 0, 0xEF53, 89, 64, PInodo, pBloque, seekInicio + 68, seekInicio + 68 + numero_structuras, PInodo, pBloque )
+                        byteSupBLock = Sup_Block.get_bytes()
+                        
+                        
+            
+                        bytes = bytearray()
+
+                        ceros = [0] * (4*numero_structuras)
+
+                        for cero in ceros:
+                            bytes += cero.to_bytes(1, byteorder="big")
+                        
+
+                        temp = Inodo(0,0,0,0,0,0,"",0)
+                        for cont in range(numero_structuras):
+                            bytes += temp.get_bytes()
+
+                        temp = Carpeta(".","..",0,0,"","",-1,-1)
+                        for cont in range((3*numero_structuras)):
+                            bytes += temp.get_bytes()
+
+                        byteSupBLock += bytes 
+
+                        byteModPaticion = byteSupBLock + byteParticion[len(byteSupBLock):]
+
+                        Guardar_enArchivo(path, byteModPaticion, seekInicio, seekFin )
+                        print(f"Se formatio la particion a EXT2 ")
+                    else:
+                        print(f"ya existe un formateo de EXT{Objeto.filesystem_type} ")
+
+
+                else:
+                    
+                    byteParticion = OptenerByte_archivo(path, seekInicio, seekFin - seekInicio)
+                    
+
+                    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+
+                    Objeto = temp.set_bytes(byteParticion)
+
+                    if Objeto.filesystem_type == 0:
+                        # n = (tamaño_particion - sizeOf(superblock) / (1 + 1 * 2310+3*1 + 1 * sizeOf(inodos) + 3 *1 * sizeOf(block))
+                    
+                        n = ((seekFin-seekInicio) - 68) / (1+2310+3+89+(3*64))
+                        numero_structuras = math.floor(n)
+
+                        PInodo= (seekInicio + 68 + (numero_structuras*2310) + numero_structuras + (3*numero_structuras) )
+                        pBloque= PInodo + (numero_structuras*89)
+
+                        Sup_Block = SuperBlock(3, numero_structuras, 3* numero_structuras, 3*numero_structuras, numero_structuras, 0, 0, 0, 0xEF53, 89, 64, PInodo, pBloque, seekInicio + 68 + (numero_structuras*2310), seekInicio + 68 + (numero_structuras*2310) + numero_structuras, PInodo, pBloque )
+                        byteSupBLock = Sup_Block.get_bytes()
+                        
+                    
+            
+                        bytes = bytearray()
+
+                        temp = Journaling("","","",0)
+                        for i in range(numero_structuras):
+                            bytes += temp.get_bytes()
+                            
+
+                        ceros = [0] * (4*numero_structuras)
+                        for cero in ceros:
+                            bytes += cero.to_bytes(1, byteorder="big")
+                        
+
+                        temp = Inodo(0,0,0,0,0,0,"",0)
+                        for cont in range(numero_structuras):
+                            bytes += temp.get_bytes()
+                        
+                        temp = Carpeta(".","..",0,0,"","",-1,-1)
+                        for cont in range((3*numero_structuras)):
+                            bytes += temp.get_bytes()
+                        
+
+                        byteSupBLock += bytes
+
+                        byteModPaticion = byteSupBLock + byteParticion[len(byteSupBLock):]
+
+                        Guardar_enArchivo(path, byteModPaticion, seekInicio, seekFin )
+                        print(f"Se formatio la particion a EXT3 ")
+
+                    else:
+                        print(f"ya existe un formateo de EXT{Objeto.filesystem_type} ")
+
             else:
-                pass
-
-
-            # int = floor(10)
-
-
+                print("id no encontrado")
         else:
-            print("id no encontrado")
+            print("El formateo no se puede realizar en una particion extendida")
+
 
     else:
         print("El comando requiere del parametro id")
@@ -116,12 +247,260 @@ def comando_rep(ListComand):
                 ReporteMBR(path, PathDSK)
             elif name == "disk":
                 reporte_disk(path, PathDSK, IdExist)
+            elif name == "sb":
+                reporte_sb(path, PathDSK, IdExist)
+            elif name == "bm_inode":
+                reporte_bm_inode(path, PathDSK, IdExist)
+            elif name == "bm_bloc":
+                reporte_bm_bloc(path, PathDSK, IdExist)
             else:
                 print(f"El valor del parametro -name={name} no es aceptado ")
         else:
             print("id no encontrado")
     else:
         print("El comando rep requiere de los parametros name, path, id")
+
+def reporte_bm_inode(path, PathDSK, IdExist):
+    seekInicio = IdExist.SeekDSKInicio
+    seekFin = IdExist.SeekDSKFin
+
+    byte_recivido = OptenerByte_archivo(PathDSK, seekInicio, (seekFin - seekInicio))
+
+    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+
+    Objeto_Reciv = temp.set_bytes(byte_recivido)
+
+    if IdExist.tipo != "E":
+        if Objeto_Reciv.filesystem_type != 0:
+
+            seekInodeInit = Objeto_Reciv.bm_inode_start
+            seekInodeFin = Objeto_Reciv.inode_start + Objeto_Reciv.inodes_count 
+
+            byte_recivido = OptenerByte_archivo(PathDSK, seekInodeInit, Objeto_Reciv.inodes_count)
+
+            ListInodos = []
+
+            cont = 0
+            for count in range(Objeto_Reciv.inodes_count):
+                ListInodos.append(int.from_bytes(byte_recivido[cont:(1+cont)], byteorder='big'))
+                cont += 1
+
+            contenido = ""
+            cont= 1
+            for bm_inode in ListInodos:
+                contenido += f"{bm_inode}   "
+                
+                if cont == 20:
+                    contenido += "\n"
+                    cont=1
+                else:
+                    cont += 1
+
+                
+
+
+            crear_archivotxt(path, contenido)
+
+
+            print("Reporte de bm_inodes generado con exito")
+
+        else:
+            print("No existe un formateo  EXT2/EXT3 en esta particion")
+    else:
+        print("No se puede realizar el reporte SUPERBLOQUE es una particion Extendida")
+
+
+def reporte_bm_bloc(path, PathDSK, IdExist):
+    seekInicio = IdExist.SeekDSKInicio
+    seekFin = IdExist.SeekDSKFin
+
+    byte_recivido = OptenerByte_archivo(PathDSK, seekInicio, (seekFin - seekInicio))
+
+    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+
+    Objeto_Reciv = temp.set_bytes(byte_recivido)
+
+    if IdExist.tipo != "E":
+        if Objeto_Reciv.filesystem_type != 0:
+
+            seekInodeInit = Objeto_Reciv.bm_block_start
+            seekInodeFin = Objeto_Reciv.inode_start + Objeto_Reciv.inodes_count 
+
+            byte_recivido = OptenerByte_archivo(PathDSK, seekInodeInit, Objeto_Reciv.blocks_count)
+
+            ListInodos = []
+
+            cont = 0
+            for count in range(Objeto_Reciv.blocks_count):
+                ListInodos.append(int.from_bytes(byte_recivido[cont:(1+cont)], byteorder='big'))
+                cont += 1
+
+            contenido = ""
+            cont= 1
+            for bm_inode in ListInodos:
+                contenido += f"{bm_inode}   "
+                
+                if cont == 20:
+                    contenido += "\n"
+                    cont=1
+                else:
+                    cont += 1
+
+            crear_archivotxt(path, contenido)
+
+
+            print("Reporte de bm_bloc generado con exito")
+
+        else:
+            print("No existe un formateo  EXT2/EXT3 en esta particion")
+    else:
+        print("No se puede realizar el reporte SUPERBLOQUE es una particion Extendida")
+
+def crear_archivotxt(path, contenido):
+    ruta_archivo, archivo = os.path.split(path)
+    ruta_archivo = ruta_archivo.replace(" ", "_")
+    # print(ruta_archivo)
+    # Comando para crear el archivo en la ruta especificada (con sudo)
+    comando_creacion_directorio = f"sudo mkdir -p  {ruta_archivo}"
+
+    # Comando para crear un archivo de texto dentro del directorio
+    comando_creacion_archivo = f"sudo touch {path}"
+
+    # Comando para cambiar los permisos del archivo (opcional, si es necesario)
+    comando_chmod = f"sudo chmod 777 {path}"
+
+    # Ejecutar el comando para crear el archivo utilizando os.system
+    os.system(comando_creacion_directorio)
+    os.system(comando_creacion_archivo)
+
+    # Ejecutar el comando para cambiar los permisos (opcional)
+    os.system(comando_chmod)
+
+    # Verificar si el archivo se creó correctamente
+    if os.path.exists(path):
+        with open(path, "w") as file:
+
+            file.seek(0)
+            file.write(contenido)
+
+        print(f"Se ha creado el archivo en: {path}")
+    else:
+        print(f"No se pudo crear el archivo en: {path}")
+
+
+
+def reporte_sb(path, PathDSK, IdExist):
+
+    seekInicio = IdExist.SeekDSKInicio
+    seekFin = IdExist.SeekDSKFin
+
+    byte_recivido = OptenerByte_archivo(PathDSK, seekInicio, (seekFin - seekInicio))
+
+    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+
+    Objeto_Reciv = temp.set_bytes(byte_recivido)
+
+    if IdExist.tipo != "E":
+        if Objeto_Reciv.filesystem_type != 0:
+
+            ContenidoPNG = ("""node [shape=plaintext];
+                // Crea un nodo con una tabla HTML de 2 columnas
+                    subgraph cluster_level1 {"""
+                    + f"""
+                label = "Super Bloque";
+                mi_nodo [label=<
+                    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">
+                        <TR>
+                        <TD colspan="2"> Reporte de SUPERBLOQUE</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_nombre_hd</TD>
+                        <TD>{IdExist.nameDSK}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_sistema_archivo</TD>
+                        <TD>{Objeto_Reciv.filesystem_type}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_inodes_count </TD>
+                        <TD>{Objeto_Reciv.inodes_count}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_blocks_count  </TD>
+                        <TD>{Objeto_Reciv.blocks_count}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_ifree_blocks_count </TD>
+                        <TD>{Objeto_Reciv.free_blocks_count}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_free_inodes_count  </TD>
+                        <TD>{Objeto_Reciv.free_inodes_count }</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_mtime </TD>
+                        <TD>{Objeto_Reciv.mtime}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_umtime </TD>
+                        <TD>{Objeto_Reciv.umtime }</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_mnt_count  </TD>
+                        <TD>{Objeto_Reciv.mnt_count }</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_magic</TD>
+                        <TD>{Objeto_Reciv.magic}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_inode_s </TD>
+                        <TD>{Objeto_Reciv.inode_s}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_block_s  </TD>
+                        <TD>{Objeto_Reciv.block_s }</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_firts_ino </TD>
+                        <TD>{Objeto_Reciv.firts_ino}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_first_blo</TD>
+                        <TD>{Objeto_Reciv.first_blo}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_bm_inode_start  </TD>
+                        <TD>{Objeto_Reciv.bm_inode_start }</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_bm_block_start  </TD>
+                        <TD>{Objeto_Reciv.bm_block_start }</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_inode_start </TD>
+                        <TD>{Objeto_Reciv.inode_start}</TD>
+                    </TR>
+                    <TR>
+                        <TD>sb_block_start </TD>
+                        <TD>{Objeto_Reciv.block_start}</TD>
+                    </TR>"""
+                    )
+             
+
+            ContenidoPNG += (
+                    """    </TABLE>
+                    >]; }"""
+                )
+            
+
+            Generar_png(path, ContenidoPNG)
+
+        else:
+            print("No existe un formateo  EXT2/EXT3 en esta particion")
+    else:
+        print("No se puede realizar el reporte SUPERBLOQUE es una particion Extendida")
+
 
 
 def reporte_disk(path, PathDSK, IdExist):
@@ -413,6 +792,7 @@ def ReporteMBR(path, PathDSK):
             <TD>{str(objetoMBR.signature)}</TD>
         </TR>"""
     )
+    
 
     contenidoPNGEBR = ""
 
@@ -589,6 +969,17 @@ def comando_mount(ListComand):
                 else:
                     if Mount.status != 1:
                         status = Mount.status = 1
+                        Mount.path = path
+
+                        if Particion[0] == "MBR":
+                            tipo = Particion[1].type
+
+                        else:
+                            tipo = "L"
+
+                        Mount.tipo = tipo
+                        Mount.SeekDSKInicio = Particion[3]
+                        Mount.SeekDSKFin = Particion[4]
                     exist = True
                     break
 
@@ -750,71 +1141,73 @@ def eliminar_parcion(path, name):
 
     byte_recivido = OptenerByte_archivo(path, 0, 121)
 
-    objetoMBR = temp.set_bytes(byte_recivido)
+    if byte_recivido != None:
 
-    SeekInicio = 0
-    SeekFin = 0
+        objetoMBR = temp.set_bytes(byte_recivido)
 
-    for particion in objetoMBR.particions:
-        SeekInicio = particion.start
-        SeekFin = SeekInicio + particion.size
-        if (
-            (particion.type == "E" or particion.type == "P")
-            and particion.name == name
-            and particion.status == "1"
-        ):
-            particion.status = "E"
-            byte_objeto = objetoMBR.get_bytes()
-            Guardar_enArchivo(path, byte_objeto, 0, objetoMBR.get_size())
+        SeekInicio = 0
+        SeekFin = 0
 
-            byte = bytearray().ljust(particion.size, b"\x00")
-            Guardar_enArchivo(path, byte, SeekInicio, SeekFin)
-            print("Particion eliminado con exito")
-            return
-        else:
-            if particion.type == "E" and particion.status == "1":
-                existeEBR = True
-                SeekEBRNext = SeekInicio
+        for particion in objetoMBR.particions:
+            SeekInicio = particion.start
+            SeekFin = SeekInicio + particion.size
+            if (
+                (particion.type == "E" or particion.type == "P")
+                and particion.name == name
+                and particion.status == "1"
+            ):
+                particion.status = "E"
+                byte_objeto = objetoMBR.get_bytes()
+                Guardar_enArchivo(path, byte_objeto, 0, objetoMBR.get_size())
 
-                while existeEBR:
-                    byte_recivido = OptenerByte_archivo(
-                        path, SeekEBRNext, SeekEBRNext + 30
-                    )
-                    tmpEBR = EBR("", "", 0, 0, 0, "")
-                    objetoEBR = tmpEBR.set_bytes(byte_recivido)
+                byte = bytearray().ljust(particion.size, b"\x00")
+                Guardar_enArchivo(path, byte, SeekInicio, SeekFin)
+                print("Particion eliminado con exito")
+                return
+            else:
+                if particion.type == "E" and particion.status == "1":
+                    existeEBR = True
+                    SeekEBRNext = SeekInicio
 
-                    if objetoEBR.status == "1":
-                        if objetoEBR.name == name:
-                            objetoEBR.status = "E"
+                    while existeEBR:
+                        byte_recivido = OptenerByte_archivo(
+                            path, SeekEBRNext, SeekEBRNext + 30
+                        )
+                        tmpEBR = EBR("", "", 0, 0, 0, "")
+                        objetoEBR = tmpEBR.set_bytes(byte_recivido)
 
-                            byte_objeto = objetoEBR.get_bytes()
+                        if objetoEBR.status == "1":
+                            if objetoEBR.name == name:
+                                objetoEBR.status = "E"
 
-                            byte = bytearray().ljust(objetoEBR.size - 30, b"\x00")
+                                byte_objeto = objetoEBR.get_bytes()
 
-                            byte_objeto += byte
+                                byte = bytearray().ljust(objetoEBR.size - 30, b"\x00")
 
-                            Guardar_enArchivo(
-                                path,
-                                byte_objeto,
-                                SeekEBRNext,
-                                SeekEBRNext + objetoEBR.size,
-                            )
-                            print("Particion eliminado con exito")
-                            return
+                                byte_objeto += byte
 
+                                Guardar_enArchivo(
+                                    path,
+                                    byte_objeto,
+                                    SeekEBRNext,
+                                    SeekEBRNext + objetoEBR.size,
+                                )
+                                print("Particion eliminado con exito")
+                                return
+
+                            else:
+                                if objetoEBR.next != -1:
+                                    SeekEBRNext = objetoEBR.next
+                                else:
+                                    existeEBR = False
                         else:
                             if objetoEBR.next != -1:
                                 SeekEBRNext = objetoEBR.next
+
                             else:
                                 existeEBR = False
-                    else:
-                        if objetoEBR.next != -1:
-                            SeekEBRNext = objetoEBR.next
 
-                        else:
-                            existeEBR = False
-
-    print("No existe la particion: " + name)
+        print("No existe la particion: " + name)
 
 
 def ObtenerParticion(path, name):
@@ -822,59 +1215,61 @@ def ObtenerParticion(path, name):
 
     byte_recivido = OptenerByte_archivo(path, 0, 121)
 
-    objetoMBR = temp.set_bytes(byte_recivido)
+    if byte_recivido != None:
 
-    SeekInicio = 0
-    SeekFin = 0
-    SeekUbicacionDisco = 13
+        objetoMBR = temp.set_bytes(byte_recivido)
 
-    for particion in objetoMBR.particions:
-        SeekInicio = particion.start
-        SeekFin = SeekInicio + particion.size
-        if (
-            (particion.type == "E" or particion.type == "P")
-            and particion.name == name
-            and particion.status == "1"
-        ):
-            return "MBR", particion, SeekUbicacionDisco, SeekInicio, SeekFin
-        else:
-            if particion.type == "E" and particion.status == "1":
-                existeEBR = True
-                SeekEBRNext = SeekInicio
+        SeekInicio = 0
+        SeekFin = 0
+        SeekUbicacionDisco = 13
 
-                while existeEBR:
-                    byte_recivido = OptenerByte_archivo(
-                        path, SeekEBRNext, SeekEBRNext + 30
-                    )
-                    tmpEBR = EBR("", "", 0, 0, 0, "")
-                    objetoEBR = tmpEBR.set_bytes(byte_recivido)
+        for particion in objetoMBR.particions:
+            SeekInicio = particion.start
+            SeekFin = SeekInicio + particion.size
+            if (
+                (particion.type == "E" or particion.type == "P")
+                and particion.name == name
+                and particion.status == "1"
+            ):
+                return "MBR", particion, SeekUbicacionDisco, SeekInicio, SeekFin
+            else:
+                if particion.type == "E" and particion.status == "1":
+                    existeEBR = True
+                    SeekEBRNext = SeekInicio
 
-                    if objetoEBR.status == "1":
-                        if objetoEBR.name == name:
-                            return (
-                                "EBR",
-                                objetoEBR,
-                                SeekEBRNext,
-                                SeekEBRNext + 30,
-                                SeekEBRNext + objetoEBR.size,
-                            )
+                    while existeEBR:
+                        byte_recivido = OptenerByte_archivo(
+                            path, SeekEBRNext, SeekEBRNext + 30
+                        )
+                        tmpEBR = EBR("", "", 0, 0, 0, "")
+                        objetoEBR = tmpEBR.set_bytes(byte_recivido)
 
-                        else:
-                            if objetoEBR.next != -1:
-                                SeekEBRNext = objetoEBR.next
-                            else:
-                                existeEBR = False
-                    else:
-                        if objetoEBR.status != "":
-                            if objetoEBR.next != -1:
-                                SeekEBRNext = objetoEBR.next
+                        if objetoEBR.status == "1":
+                            if objetoEBR.name == name:
+                                return (
+                                    "EBR",
+                                    objetoEBR,
+                                    SeekEBRNext,
+                                    SeekEBRNext + 30,
+                                    SeekEBRNext + objetoEBR.size,
+                                )
 
                             else:
-                                existeEBR = False
+                                if objetoEBR.next != -1:
+                                    SeekEBRNext = objetoEBR.next
+                                else:
+                                    existeEBR = False
                         else:
-                            existeEBR = False
+                            if objetoEBR.status != "":
+                                if objetoEBR.next != -1:
+                                    SeekEBRNext = objetoEBR.next
 
-        SeekUbicacionDisco += particion.get_size()
+                                else:
+                                    existeEBR = False
+                            else:
+                                existeEBR = False
+
+            SeekUbicacionDisco += particion.get_size()
 
     return None
 

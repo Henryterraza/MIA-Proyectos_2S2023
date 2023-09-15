@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'CADENA COMILLA ENTERO FIT IGUAL MENOS PATH RUTA SIZE UNIT\n    param : CADENA parametros\n    parametros : parametros parametro\n                | parametro\n                | empty\n    parametro : MENOS CADENA IGUAL RUTA \n                | MENOS CADENA IGUAL COMILLA RUTA COMILLA\n                | MENOS CADENA IGUAL COMILLA CADENA COMILLA\n                | MENOS CADENA IGUAL CADENA\n                | MENOS CADENA IGUAL ENTERO\n    empty :'
+_lr_signature = 'CADENA COMENTARIO COMILLA ENTERO FIT IGUAL MENOS PATH RUTA SIZE UNIT\n    inicio : param\n            | inicio param\n    \n    param : CADENA parametros \n    parametros : parametros parametro\n                | parametro\n                | empty\n    parametro : MENOS CADENA IGUAL RUTA \n                | MENOS CADENA IGUAL COMILLA RUTA COMILLA\n                | MENOS CADENA IGUAL COMILLA CADENA COMILLA\n                | MENOS CADENA IGUAL CADENA\n                | MENOS CADENA IGUAL ENTERO\n    empty :'
     
-_lr_action_items = {'CADENA':([0,6,9,12,],[2,8,10,14,]),'$end':([1,2,3,4,5,7,10,11,13,16,17,],[0,-10,-1,-3,-4,-2,-8,-5,-9,-7,-6,]),'MENOS':([2,3,4,5,7,10,11,13,16,17,],[6,6,-3,-4,-2,-8,-5,-9,-7,-6,]),'IGUAL':([8,],[9,]),'RUTA':([9,12,],[11,15,]),'COMILLA':([9,14,15,],[12,16,17,]),'ENTERO':([9,],[13,]),}
+_lr_action_items = {'CADENA':([0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,18,19,],[3,3,-1,-12,-2,-3,-5,-6,10,-4,12,-10,-7,16,-11,-9,-8,]),'$end':([1,2,3,4,5,6,7,9,12,13,15,18,19,],[0,-1,-12,-2,-3,-5,-6,-4,-10,-7,-11,-9,-8,]),'MENOS':([3,5,6,7,9,12,13,15,18,19,],[8,8,-5,-6,-4,-10,-7,-11,-9,-8,]),'IGUAL':([10,],[11,]),'RUTA':([11,14,],[13,17,]),'COMILLA':([11,16,17,],[14,18,19,]),'ENTERO':([11,],[15,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'param':([0,],[1,]),'parametros':([2,],[3,]),'parametro':([2,3,],[4,7,]),'empty':([2,],[5,]),}
+_lr_goto_items = {'inicio':([0,],[1,]),'param':([0,1,],[2,4,]),'parametros':([3,],[5,]),'parametro':([3,5,],[6,9,]),'empty':([3,],[7,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -26,15 +26,17 @@ for _k, _v in _lr_goto_items.items():
        _lr_goto[_x][_k] = _y
 del _lr_goto_items
 _lr_productions = [
-  ("S' -> param","S'",1,None,None,None),
-  ('param -> CADENA parametros','param',2,'p_param','sintactico.py',16),
-  ('parametros -> parametros parametro','parametros',2,'p_parametros','sintactico.py',22),
-  ('parametros -> parametro','parametros',1,'p_parametros','sintactico.py',23),
-  ('parametros -> empty','parametros',1,'p_parametros','sintactico.py',24),
-  ('parametro -> MENOS CADENA IGUAL RUTA','parametro',4,'p_parametro','sintactico.py',32),
-  ('parametro -> MENOS CADENA IGUAL COMILLA RUTA COMILLA','parametro',6,'p_parametro','sintactico.py',33),
-  ('parametro -> MENOS CADENA IGUAL COMILLA CADENA COMILLA','parametro',6,'p_parametro','sintactico.py',34),
-  ('parametro -> MENOS CADENA IGUAL CADENA','parametro',4,'p_parametro','sintactico.py',35),
-  ('parametro -> MENOS CADENA IGUAL ENTERO','parametro',4,'p_parametro','sintactico.py',36),
-  ('empty -> <empty>','empty',0,'p_empty','sintactico.py',50),
+  ("S' -> inicio","S'",1,None,None,None),
+  ('inicio -> param','inicio',1,'p_inicio','sintactico.py',18),
+  ('inicio -> inicio param','inicio',2,'p_inicio','sintactico.py',19),
+  ('param -> CADENA parametros','param',2,'p_param','sintactico.py',31),
+  ('parametros -> parametros parametro','parametros',2,'p_parametros','sintactico.py',37),
+  ('parametros -> parametro','parametros',1,'p_parametros','sintactico.py',38),
+  ('parametros -> empty','parametros',1,'p_parametros','sintactico.py',39),
+  ('parametro -> MENOS CADENA IGUAL RUTA','parametro',4,'p_parametro','sintactico.py',47),
+  ('parametro -> MENOS CADENA IGUAL COMILLA RUTA COMILLA','parametro',6,'p_parametro','sintactico.py',48),
+  ('parametro -> MENOS CADENA IGUAL COMILLA CADENA COMILLA','parametro',6,'p_parametro','sintactico.py',49),
+  ('parametro -> MENOS CADENA IGUAL CADENA','parametro',4,'p_parametro','sintactico.py',50),
+  ('parametro -> MENOS CADENA IGUAL ENTERO','parametro',4,'p_parametro','sintactico.py',51),
+  ('empty -> <empty>','empty',0,'p_empty','sintactico.py',65),
 ]
