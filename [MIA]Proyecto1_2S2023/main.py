@@ -125,104 +125,107 @@ def comando_mkfs(ListComand):
                 
                 if fs == "2fs":
                     byteParticion = OptenerByte_archivo(path, seekInicio, seekFin - seekInicio)
+
+                    if byteParticion != None:
                     
-                    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+                        temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
 
-                    Objeto = temp.set_bytes(byteParticion)
+                        Objeto = temp.set_bytes(byteParticion)
 
 
-                    if Objeto.filesystem_type == 0:
-                        # n = (tamaño_particion - sizeOf(superblock) / (1 + 3 * 1 + 1 * sizeOf(inodos) + 3 *1 * sizeOf(block))
-                        n = ((seekFin-seekInicio) - 68) / (1+3+89+(3*64))
-                        numero_structuras = math.floor(n)
+                        if Objeto.filesystem_type == 0:
+                            # n = (tamaño_particion - sizeOf(superblock) / (1 + 3 * 1 + 1 * sizeOf(inodos) + 3 *1 * sizeOf(block))
+                            n = ((seekFin-seekInicio) - 68) / (1+3+89+(3*64))
+                            numero_structuras = math.floor(n)
 
-                        PInodo= (seekInicio + 68 + numero_structuras) + (numero_structuras * 3)
-                        pBloque= PInodo + (numero_structuras * 89)
+                            PInodo= (seekInicio + 68 + numero_structuras) + (numero_structuras * 3)
+                            pBloque= PInodo + (numero_structuras * 89)
 
-                        Sup_Block = SuperBlock(2, numero_structuras, 3* numero_structuras, 3*numero_structuras, numero_structuras, 0, 0, 0, 0xEF53, 89, 64, PInodo, pBloque, seekInicio + 68, seekInicio + 68 + numero_structuras, PInodo, pBloque )
-                        byteSupBLock = Sup_Block.get_bytes()
-                        
-                        
-            
-                        bytes = bytearray()
+                            Sup_Block = SuperBlock(2, numero_structuras, 3* numero_structuras, 3*numero_structuras, numero_structuras, 0, 0, 0, 0xEF53, 89, 64, PInodo, pBloque, seekInicio + 68, seekInicio + 68 + numero_structuras, PInodo, pBloque )
+                            byteSupBLock = Sup_Block.get_bytes()
+                            
+                            
+                
+                            bytes = bytearray()
 
-                        ceros = [0] * (4*numero_structuras)
+                            ceros = [0] * (4*numero_structuras)
 
-                        for cero in ceros:
-                            bytes += cero.to_bytes(1, byteorder="big")
-                        
+                            for cero in ceros:
+                                bytes += cero.to_bytes(1, byteorder="big")
+                            
 
-                        temp = Inodo(0,0,0,0,0,0,"",0)
-                        for cont in range(numero_structuras):
-                            bytes += temp.get_bytes()
+                            temp = Inodo(0,0,0,0,0,0,"",0)
+                            for cont in range(numero_structuras):
+                                bytes += temp.get_bytes()
 
-                        temp = Carpeta(".","..",0,0,"","",-1,-1)
-                        for cont in range((3*numero_structuras)):
-                            bytes += temp.get_bytes()
+                            temp = Carpeta(".","..",0,0,"","",-1,-1)
+                            for cont in range((3*numero_structuras)):
+                                bytes += temp.get_bytes()
 
-                        byteSupBLock += bytes 
+                            byteSupBLock += bytes 
 
-                        byteModPaticion = byteSupBLock + byteParticion[len(byteSupBLock):]
+                            byteModPaticion = byteSupBLock + byteParticion[len(byteSupBLock):]
 
-                        Guardar_enArchivo(path, byteModPaticion, seekInicio, seekFin )
-                        print(f"Se formatio la particion a EXT2 ")
-                    else:
-                        print(f"ya existe un formateo de EXT{Objeto.filesystem_type} ")
+                            Guardar_enArchivo(path, byteModPaticion, seekInicio, seekFin )
+                            print(f"Se formatio la particion a EXT2 ")
+                        else:
+                            print(f"ya existe un formateo de EXT{Objeto.filesystem_type} ")
 
 
                 else:
                     
                     byteParticion = OptenerByte_archivo(path, seekInicio, seekFin - seekInicio)
                     
+                    if byteParticion != None:
 
-                    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+                        temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
 
-                    Objeto = temp.set_bytes(byteParticion)
+                        Objeto = temp.set_bytes(byteParticion)
 
-                    if Objeto.filesystem_type == 0:
-                        # n = (tamaño_particion - sizeOf(superblock) / (1 + 1 * 2310+3*1 + 1 * sizeOf(inodos) + 3 *1 * sizeOf(block))
-                    
-                        n = ((seekFin-seekInicio) - 68) / (1+2310+3+89+(3*64))
-                        numero_structuras = math.floor(n)
-
-                        PInodo= (seekInicio + 68 + (numero_structuras*2310) + numero_structuras + (3*numero_structuras) )
-                        pBloque= PInodo + (numero_structuras*89)
-
-                        Sup_Block = SuperBlock(3, numero_structuras, 3* numero_structuras, 3*numero_structuras, numero_structuras, 0, 0, 0, 0xEF53, 89, 64, PInodo, pBloque, seekInicio + 68 + (numero_structuras*2310), seekInicio + 68 + (numero_structuras*2310) + numero_structuras, PInodo, pBloque )
-                        byteSupBLock = Sup_Block.get_bytes()
+                        if Objeto.filesystem_type == 0:
+                            # n = (tamaño_particion - sizeOf(superblock) / (1 + 1 * 2310+3*1 + 1 * sizeOf(inodos) + 3 *1 * sizeOf(block))
                         
-                    
-            
-                        bytes = bytearray()
+                            n = ((seekFin-seekInicio) - 68) / (1+2310+3+89+(3*64))
+                            numero_structuras = math.floor(n)
 
-                        temp = Journaling("","","",0)
-                        for i in range(numero_structuras):
-                            bytes += temp.get_bytes()
+                            PInodo= (seekInicio + 68 + (numero_structuras*2310) + numero_structuras + (3*numero_structuras) )
+                            pBloque= PInodo + (numero_structuras*89)
+
+                            Sup_Block = SuperBlock(3, numero_structuras, 3* numero_structuras, 3*numero_structuras, numero_structuras, 0, 0, 0, 0xEF53, 89, 64, PInodo, pBloque, seekInicio + 68 + (numero_structuras*2310), seekInicio + 68 + (numero_structuras*2310) + numero_structuras, PInodo, pBloque )
+                            byteSupBLock = Sup_Block.get_bytes()
+                            
+                        
+                
+                            bytes = bytearray()
+
+                            temp = Journaling("","","",0)
+                            for i in range(numero_structuras):
+                                bytes += temp.get_bytes()
+                                
+
+                            ceros = [0] * (4*numero_structuras)
+                            for cero in ceros:
+                                bytes += cero.to_bytes(1, byteorder="big")
                             
 
-                        ceros = [0] * (4*numero_structuras)
-                        for cero in ceros:
-                            bytes += cero.to_bytes(1, byteorder="big")
-                        
+                            temp = Inodo(0,0,0,0,0,0,"",0)
+                            for cont in range(numero_structuras):
+                                bytes += temp.get_bytes()
+                            
+                            temp = Carpeta(".","..",0,0,"","",-1,-1)
+                            for cont in range((3*numero_structuras)):
+                                bytes += temp.get_bytes()
+                            
 
-                        temp = Inodo(0,0,0,0,0,0,"",0)
-                        for cont in range(numero_structuras):
-                            bytes += temp.get_bytes()
-                        
-                        temp = Carpeta(".","..",0,0,"","",-1,-1)
-                        for cont in range((3*numero_structuras)):
-                            bytes += temp.get_bytes()
-                        
+                            byteSupBLock += bytes
 
-                        byteSupBLock += bytes
+                            byteModPaticion = byteSupBLock + byteParticion[len(byteSupBLock):]
 
-                        byteModPaticion = byteSupBLock + byteParticion[len(byteSupBLock):]
+                            Guardar_enArchivo(path, byteModPaticion, seekInicio, seekFin )
+                            print(f"Se formatio la particion a EXT3 ")
 
-                        Guardar_enArchivo(path, byteModPaticion, seekInicio, seekFin )
-                        print(f"Se formatio la particion a EXT3 ")
-
-                    else:
-                        print(f"ya existe un formateo de EXT{Objeto.filesystem_type} ")
+                        else:
+                            print(f"ya existe un formateo de EXT{Objeto.filesystem_type} ")
 
             else:
                 print("id no encontrado")
@@ -253,6 +256,8 @@ def comando_rep(ListComand):
                 reporte_bm_inode(path, PathDSK, IdExist)
             elif name == "bm_bloc":
                 reporte_bm_bloc(path, PathDSK, IdExist)
+            elif name == "inode":
+                reporte_inode(path, PathDSK, IdExist)
             else:
                 print(f"El valor del parametro -name={name} no es aceptado ")
         else:
@@ -260,54 +265,59 @@ def comando_rep(ListComand):
     else:
         print("El comando rep requiere de los parametros name, path, id")
 
+def reporte_inode(path, PathDSK, IdExist):
+    pass
+
 def reporte_bm_inode(path, PathDSK, IdExist):
     seekInicio = IdExist.SeekDSKInicio
     seekFin = IdExist.SeekDSKFin
 
     byte_recivido = OptenerByte_archivo(PathDSK, seekInicio, (seekFin - seekInicio))
 
-    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+    if byte_recivido != None:
 
-    Objeto_Reciv = temp.set_bytes(byte_recivido)
+        temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
 
-    if IdExist.tipo != "E":
-        if Objeto_Reciv.filesystem_type != 0:
+        Objeto_Reciv = temp.set_bytes(byte_recivido)
 
-            seekInodeInit = Objeto_Reciv.bm_inode_start
-            seekInodeFin = Objeto_Reciv.inode_start + Objeto_Reciv.inodes_count 
+        if IdExist.tipo != "E":
+            if Objeto_Reciv.filesystem_type != 0:
 
-            byte_recivido = OptenerByte_archivo(PathDSK, seekInodeInit, Objeto_Reciv.inodes_count)
+                seekInodeInit = Objeto_Reciv.bm_inode_start
+                seekInodeFin = Objeto_Reciv.inode_start + Objeto_Reciv.inodes_count 
 
-            ListInodos = []
+                byte_recivido = OptenerByte_archivo(PathDSK, seekInodeInit, Objeto_Reciv.inodes_count)
 
-            cont = 0
-            for count in range(Objeto_Reciv.inodes_count):
-                ListInodos.append(int.from_bytes(byte_recivido[cont:(1+cont)], byteorder='big'))
-                cont += 1
+                ListInodos = []
 
-            contenido = ""
-            cont= 1
-            for bm_inode in ListInodos:
-                contenido += f"{bm_inode}   "
-                
-                if cont == 20:
-                    contenido += "\n"
-                    cont=1
-                else:
+                cont = 0
+                for count in range(Objeto_Reciv.inodes_count):
+                    ListInodos.append(int.from_bytes(byte_recivido[cont:(1+cont)], byteorder='big'))
                     cont += 1
 
-                
+                contenido = ""
+                cont= 1
+                for bm_inode in ListInodos:
+                    contenido += f"{bm_inode}   "
+                    
+                    if cont == 20:
+                        contenido += "\n"
+                        cont=1
+                    else:
+                        cont += 1
+
+                    
 
 
-            crear_archivotxt(path, contenido)
+                crear_archivotxt(path, contenido)
 
 
-            print("Reporte de bm_inodes generado con exito")
+                print("Reporte de bm_inodes generado con exito")
 
+            else:
+                print("No existe un formateo  EXT2/EXT3 en esta particion")
         else:
-            print("No existe un formateo  EXT2/EXT3 en esta particion")
-    else:
-        print("No se puede realizar el reporte SUPERBLOQUE es una particion Extendida")
+            print("No se puede realizar el reporte SUPERBLOQUE es una particion Extendida")
 
 
 def reporte_bm_bloc(path, PathDSK, IdExist):
@@ -316,45 +326,47 @@ def reporte_bm_bloc(path, PathDSK, IdExist):
 
     byte_recivido = OptenerByte_archivo(PathDSK, seekInicio, (seekFin - seekInicio))
 
-    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+    if byte_recivido != None:
 
-    Objeto_Reciv = temp.set_bytes(byte_recivido)
+        temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
 
-    if IdExist.tipo != "E":
-        if Objeto_Reciv.filesystem_type != 0:
+        Objeto_Reciv = temp.set_bytes(byte_recivido)
 
-            seekInodeInit = Objeto_Reciv.bm_block_start
-            seekInodeFin = Objeto_Reciv.inode_start + Objeto_Reciv.inodes_count 
+        if IdExist.tipo != "E":
+            if Objeto_Reciv.filesystem_type != 0:
 
-            byte_recivido = OptenerByte_archivo(PathDSK, seekInodeInit, Objeto_Reciv.blocks_count)
+                seekInodeInit = Objeto_Reciv.bm_block_start
+                seekInodeFin = Objeto_Reciv.inode_start + Objeto_Reciv.inodes_count 
 
-            ListInodos = []
+                byte_recivido = OptenerByte_archivo(PathDSK, seekInodeInit, Objeto_Reciv.blocks_count)
 
-            cont = 0
-            for count in range(Objeto_Reciv.blocks_count):
-                ListInodos.append(int.from_bytes(byte_recivido[cont:(1+cont)], byteorder='big'))
-                cont += 1
+                ListInodos = []
 
-            contenido = ""
-            cont= 1
-            for bm_inode in ListInodos:
-                contenido += f"{bm_inode}   "
-                
-                if cont == 20:
-                    contenido += "\n"
-                    cont=1
-                else:
+                cont = 0
+                for count in range(Objeto_Reciv.blocks_count):
+                    ListInodos.append(int.from_bytes(byte_recivido[cont:(1+cont)], byteorder='big'))
                     cont += 1
 
-            crear_archivotxt(path, contenido)
+                contenido = ""
+                cont= 1
+                for bm_inode in ListInodos:
+                    contenido += f"{bm_inode}   "
+                    
+                    if cont == 20:
+                        contenido += "\n"
+                        cont=1
+                    else:
+                        cont += 1
+
+                crear_archivotxt(path, contenido)
 
 
-            print("Reporte de bm_bloc generado con exito")
+                print("Reporte de bm_bloc generado con exito")
 
+            else:
+                print("No existe un formateo  EXT2/EXT3 en esta particion")
         else:
-            print("No existe un formateo  EXT2/EXT3 en esta particion")
-    else:
-        print("No se puede realizar el reporte SUPERBLOQUE es una particion Extendida")
+            print("No se puede realizar el reporte SUPERBLOQUE es una particion Extendida")
 
 def crear_archivotxt(path, contenido):
     ruta_archivo, archivo = os.path.split(path)
@@ -396,110 +408,112 @@ def reporte_sb(path, PathDSK, IdExist):
 
     byte_recivido = OptenerByte_archivo(PathDSK, seekInicio, (seekFin - seekInicio))
 
-    temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+    if byte_recivido != None:
 
-    Objeto_Reciv = temp.set_bytes(byte_recivido)
+        temp = SuperBlock(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
 
-    if IdExist.tipo != "E":
-        if Objeto_Reciv.filesystem_type != 0:
+        Objeto_Reciv = temp.set_bytes(byte_recivido)
 
-            ContenidoPNG = ("""node [shape=plaintext];
-                // Crea un nodo con una tabla HTML de 2 columnas
-                    subgraph cluster_level1 {"""
-                    + f"""
-                label = "Super Bloque";
-                mi_nodo [label=<
-                    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">
+        if IdExist.tipo != "E":
+            if Objeto_Reciv.filesystem_type != 0:
+
+                ContenidoPNG = ("""node [shape=plaintext];
+                    // Crea un nodo con una tabla HTML de 2 columnas
+                        subgraph cluster_level1 {"""
+                        + f"""
+                    label = "Super Bloque";
+                    mi_nodo [label=<
+                        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">
+                            <TR>
+                            <TD colspan="2"> Reporte de SUPERBLOQUE</TD>
+                        </TR>
                         <TR>
-                        <TD colspan="2"> Reporte de SUPERBLOQUE</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_nombre_hd</TD>
-                        <TD>{IdExist.nameDSK}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_sistema_archivo</TD>
-                        <TD>{Objeto_Reciv.filesystem_type}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_inodes_count </TD>
-                        <TD>{Objeto_Reciv.inodes_count}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_blocks_count  </TD>
-                        <TD>{Objeto_Reciv.blocks_count}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_ifree_blocks_count </TD>
-                        <TD>{Objeto_Reciv.free_blocks_count}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_free_inodes_count  </TD>
-                        <TD>{Objeto_Reciv.free_inodes_count }</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_mtime </TD>
-                        <TD>{Objeto_Reciv.mtime}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_umtime </TD>
-                        <TD>{Objeto_Reciv.umtime }</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_mnt_count  </TD>
-                        <TD>{Objeto_Reciv.mnt_count }</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_magic</TD>
-                        <TD>{Objeto_Reciv.magic}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_inode_s </TD>
-                        <TD>{Objeto_Reciv.inode_s}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_block_s  </TD>
-                        <TD>{Objeto_Reciv.block_s }</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_firts_ino </TD>
-                        <TD>{Objeto_Reciv.firts_ino}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_first_blo</TD>
-                        <TD>{Objeto_Reciv.first_blo}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_bm_inode_start  </TD>
-                        <TD>{Objeto_Reciv.bm_inode_start }</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_bm_block_start  </TD>
-                        <TD>{Objeto_Reciv.bm_block_start }</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_inode_start </TD>
-                        <TD>{Objeto_Reciv.inode_start}</TD>
-                    </TR>
-                    <TR>
-                        <TD>sb_block_start </TD>
-                        <TD>{Objeto_Reciv.block_start}</TD>
-                    </TR>"""
+                            <TD>sb_nombre_hd</TD>
+                            <TD>{IdExist.nameDSK}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_sistema_archivo</TD>
+                            <TD>{Objeto_Reciv.filesystem_type}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_inodes_count </TD>
+                            <TD>{Objeto_Reciv.inodes_count}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_blocks_count  </TD>
+                            <TD>{Objeto_Reciv.blocks_count}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_ifree_blocks_count </TD>
+                            <TD>{Objeto_Reciv.free_blocks_count}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_free_inodes_count  </TD>
+                            <TD>{Objeto_Reciv.free_inodes_count }</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_mtime </TD>
+                            <TD>{Objeto_Reciv.mtime}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_umtime </TD>
+                            <TD>{Objeto_Reciv.umtime }</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_mnt_count  </TD>
+                            <TD>{Objeto_Reciv.mnt_count }</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_magic</TD>
+                            <TD>{Objeto_Reciv.magic}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_inode_s </TD>
+                            <TD>{Objeto_Reciv.inode_s}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_block_s  </TD>
+                            <TD>{Objeto_Reciv.block_s }</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_firts_ino </TD>
+                            <TD>{Objeto_Reciv.firts_ino}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_first_blo</TD>
+                            <TD>{Objeto_Reciv.first_blo}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_bm_inode_start  </TD>
+                            <TD>{Objeto_Reciv.bm_inode_start }</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_bm_block_start  </TD>
+                            <TD>{Objeto_Reciv.bm_block_start }</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_inode_start </TD>
+                            <TD>{Objeto_Reciv.inode_start}</TD>
+                        </TR>
+                        <TR>
+                            <TD>sb_block_start </TD>
+                            <TD>{Objeto_Reciv.block_start}</TD>
+                        </TR>"""
+                        )
+                
+
+                ContenidoPNG += (
+                        """    </TABLE>
+                        >]; }"""
                     )
-             
+                
 
-            ContenidoPNG += (
-                    """    </TABLE>
-                    >]; }"""
-                )
-            
+                Generar_png(path, ContenidoPNG)
 
-            Generar_png(path, ContenidoPNG)
-
+            else:
+                print("No existe un formateo  EXT2/EXT3 en esta particion")
         else:
-            print("No existe un formateo  EXT2/EXT3 en esta particion")
-    else:
-        print("No se puede realizar el reporte SUPERBLOQUE es una particion Extendida")
+            print("No se puede realizar el reporte SUPERBLOQUE es una particion Extendida")
 
 
 
@@ -508,127 +522,129 @@ def reporte_disk(path, PathDSK, IdExist):
 
     byte_recivido = OptenerByte_archivo(PathDSK, 0, 121)
 
-    objetoMBR = temp.set_bytes(byte_recivido)
+    if byte_recivido != None:
 
-    SeekInicio = 0
+        objetoMBR = temp.set_bytes(byte_recivido)
 
-    TamanoDSK = objetoMBR.size
+        SeekInicio = 0
 
-    porcent = (121 * 100) / TamanoDSK
+        TamanoDSK = objetoMBR.size
 
-    ContenidoPNG = (
-        """  rankdir = LR;
-    subgraph cluster_level2 {
-        label ="""
-        + f''' "{IdExist.nameDSK}";
-    mux [shape=record,label="'''
-        + "{"
-        + f"""MBR\\n{round(porcent, 3)}% """
-    )
+        porcent = (121 * 100) / TamanoDSK
 
-    for i in range(len(objetoMBR.particions) - 1):
-        particion = objetoMBR.particions[i]
-        particion_sig = objetoMBR.particions[i + 1]
-        sizePart = objetoMBR.particions[i].size
+        ContenidoPNG = (
+            """  rankdir = LR;
+        subgraph cluster_level2 {
+            label ="""
+            + f''' "{IdExist.nameDSK}";
+        mux [shape=record,label="'''
+            + "{"
+            + f"""MBR\\n{round(porcent, 3)}% """
+        )
 
-        SeekInicio = particion.start
+        for i in range(len(objetoMBR.particions) - 1):
+            particion = objetoMBR.particions[i]
+            particion_sig = objetoMBR.particions[i + 1]
+            sizePart = objetoMBR.particions[i].size
 
-        SeekInicio_sig = particion_sig.start
-        SeekFin_sig = SeekInicio + particion_sig.size
+            SeekInicio = particion.start
 
-        res = SeekInicio_sig - SeekInicio
+            SeekInicio_sig = particion_sig.start
+            SeekFin_sig = SeekInicio + particion_sig.size
 
-        if particion.type == "P":
-            if particion_sig.status == "1" or particion_sig.status == "E":
-                if res == sizePart:
-                    if particion.status != "E":
-                        porcent = (sizePart * 100) / TamanoDSK
-                        ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
+            res = SeekInicio_sig - SeekInicio
+
+            if particion.type == "P":
+                if particion_sig.status == "1" or particion_sig.status == "E":
+                    if res == sizePart:
+                        if particion.status != "E":
+                            porcent = (sizePart * 100) / TamanoDSK
+                            ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
+                        else:
+                            porcent = (sizePart * 100) / TamanoDSK
+                            ContenidoPNG += f"|Libre\\n{round(porcent, 3)}%"
+
                     else:
-                        porcent = (sizePart * 100) / TamanoDSK
-                        ContenidoPNG += f"|Libre\\n{round(porcent, 3)}%"
+                        if particion.status != "E":
+                            porcent = (sizePart * 100) / TamanoDSK
+                            ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
 
+                            porcent = ((res - sizePart) * 100) / TamanoDSK
+                            ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+                        else:
+                            porcent = (res * 100) / TamanoDSK
+                            ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
                 else:
-                    if particion.status != "E":
-                        porcent = (sizePart * 100) / TamanoDSK
-                        ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
+                    porcent = (sizePart * 100) / TamanoDSK
+                    ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
 
-                        porcent = ((res - sizePart) * 100) / TamanoDSK
-                        ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+                    porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
+                    ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+
+            elif particion.type == "E":
+                ContenidoPNG += "|{Extendida|{"
+
+                if (particion_sig.status == "1" or particion_sig.status == "E"):  # verifica si existe otra particion despues de la extendida
+                    if (res == sizePart):  # como existe otra particion verifica si el tamano es completo o proporcinal
+                        # ContenidoPNG += '|{Extendida|{'
+
+                        ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
+
                     else:
-                        porcent = (res * 100) / TamanoDSK
+                        ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
+
+                        porcent = (res - sizePart * 100) / TamanoDSK
                         ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
-            else:
-                porcent = (sizePart * 100) / TamanoDSK
-                ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
-
-                porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
-                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
-
-        elif particion.type == "E":
-            ContenidoPNG += "|{Extendida|{"
-
-            if (particion_sig.status == "1" or particion_sig.status == "E"):  # verifica si existe otra particion despues de la extendida
-                if (res == sizePart):  # como existe otra particion verifica si el tamano es completo o proporcinal
+                else:
                     # ContenidoPNG += '|{Extendida|{'
 
                     ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
 
+                    # Este codigo va al final por si no existe otra particion al final de particion extendida
+                    porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
+                    ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+
+        if objetoMBR.particions[-1].status == "1" or objetoMBR.particions[-1].status == "E":
+            particion = objetoMBR.particions[-1]
+            sizePart = objetoMBR.particions[-1].size
+
+            SeekInicio = particion.start
+
+            SeekInicio_sig = SeekInicio + sizePart
+
+            res = SeekInicio_sig - SeekInicio
+
+            if particion.type == "P":
+
+                if particion.status != "E":
+                    porcent = (sizePart * 100) / TamanoDSK
+                    ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
+
+                    porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
+                    ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
                 else:
+                    porcent = ((TamanoDSK - SeekInicio) * 100) / TamanoDSK
+                    ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+
+
+            elif particion.type == "E":
+                ContenidoPNG += "|{Extendida|{"
+
+
+                if particion.status != "E":
                     ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
 
-                    porcent = (res - sizePart * 100) / TamanoDSK
+                    # Este codigo va al final por si no existe otra particion al final de particion extendida
+                    porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
                     ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
-            else:
-                # ContenidoPNG += '|{Extendida|{'
+                else:
+                    porcent = ((TamanoDSK - SeekInicio) * 100) / TamanoDSK
+                    ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
+                    
 
-                ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
+        ContenidoPNG += """}"];}"""
 
-                # Este codigo va al final por si no existe otra particion al final de particion extendida
-                porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
-                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
-
-    if objetoMBR.particions[-1].status == "1" or objetoMBR.particions[-1].status == "E":
-        particion = objetoMBR.particions[-1]
-        sizePart = objetoMBR.particions[-1].size
-
-        SeekInicio = particion.start
-
-        SeekInicio_sig = SeekInicio + sizePart
-
-        res = SeekInicio_sig - SeekInicio
-
-        if particion.type == "P":
-
-            if particion.status != "E":
-                porcent = (sizePart * 100) / TamanoDSK
-                ContenidoPNG += f"|Primaria\\n{round(porcent, 3)}%"
-
-                porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
-                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
-            else:
-                porcent = ((TamanoDSK - SeekInicio) * 100) / TamanoDSK
-                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
-
-
-        elif particion.type == "E":
-            ContenidoPNG += "|{Extendida|{"
-
-
-            if particion.status != "E":
-                ContenidoPNG += ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart)
-
-                # Este codigo va al final por si no existe otra particion al final de particion extendida
-                porcent = ((TamanoDSK - sizePart - SeekInicio) * 100) / TamanoDSK
-                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
-            else:
-                porcent = ((TamanoDSK - SeekInicio) * 100) / TamanoDSK
-                ContenidoPNG += f"|libre\\n{round(porcent, 3)}%"
-                
-
-    ContenidoPNG += """}"];}"""
-
-    Generar_png(path, ContenidoPNG)
+        Generar_png(path, ContenidoPNG)
 
 
 def ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart):
@@ -639,51 +655,53 @@ def ExtendidaPNG(SeekInicio, PathDSK, TamanoDSK, sizePart):
 
     while existeEBR:
         byte_recivido = OptenerByte_archivo(PathDSK, SeekEBRNext, SeekEBRNext + 30)
-        tmpEBR = EBR("", "", 0, 0, 0, "")
-        objetoEBR = tmpEBR.set_bytes(byte_recivido)
 
-        if objetoEBR.status == "1" or objetoEBR.status == "E":
-            EspLibreExt += objetoEBR.size
+        if byte_recivido != None:
+            tmpEBR = EBR("", "", 0, 0, 0, "")
+            objetoEBR = tmpEBR.set_bytes(byte_recivido)
 
-            if objetoEBR.next != -1:
-                restEBR = objetoEBR.next - objetoEBR.start
+            if objetoEBR.status == "1" or objetoEBR.status == "E":
+                EspLibreExt += objetoEBR.size
 
-                if restEBR == objetoEBR.size:
-                    if objetoEBR.status != "E":
-                        porcent = ((objetoEBR.size) * 100) / TamanoDSK
-                        ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
+                if objetoEBR.next != -1:
+                    restEBR = objetoEBR.next - objetoEBR.start
+
+                    if restEBR == objetoEBR.size:
+                        if objetoEBR.status != "E":
+                            porcent = ((objetoEBR.size) * 100) / TamanoDSK
+                            ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
+                        else:
+                            porcent = ((objetoEBR.size) * 100) / TamanoDSK
+                            ContenidoPNG += f"Libre\n{round(porcent, 3)}%|"
+
                     else:
-                        porcent = ((objetoEBR.size) * 100) / TamanoDSK
-                        ContenidoPNG += f"Libre\n{round(porcent, 3)}%|"
+                        if objetoEBR.status != "E":
+                            porcent = ((objetoEBR.size) * 100) / TamanoDSK
+                            ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
+                            porcent = ((restEBR - objetoEBR.size) * 100) / TamanoDSK
+                            ContenidoPNG += f"Libre\\n{round(porcent, 3)}%|"
+                        else:
+                            porcent = ((objetoEBR.size) * 100) / TamanoDSK
+                            ContenidoPNG += f"Libre\\n{round(porcent, 3)}%|"
+
+                    SeekEBRNext = objetoEBR.next
 
                 else:
                     if objetoEBR.status != "E":
                         porcent = ((objetoEBR.size) * 100) / TamanoDSK
                         ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
-                        porcent = ((restEBR - objetoEBR.size) * 100) / TamanoDSK
-                        ContenidoPNG += f"Libre\\n{round(porcent, 3)}%|"
+                        porcent = ((sizePart - EspLibreExt) * 100) / TamanoDSK
+                        ContenidoPNG += f"Libre\\n{round(porcent, 3)}%" + "}}"
                     else:
-                        porcent = ((objetoEBR.size) * 100) / TamanoDSK
-                        ContenidoPNG += f"Libre\\n{round(porcent, 3)}%|"
-
-                SeekEBRNext = objetoEBR.next
+                        porcent = ((sizePart) * 100) / TamanoDSK
+                        ContenidoPNG += f"Libre\\n{round(porcent, 3)}%" + "}}"
+                    
+                    existeEBR = False
 
             else:
-                if objetoEBR.status != "E":
-                    porcent = ((objetoEBR.size) * 100) / TamanoDSK
-                    ContenidoPNG += f"EBR|logica\\n{round(porcent, 3)}%|"
-                    porcent = ((sizePart - EspLibreExt) * 100) / TamanoDSK
-                    ContenidoPNG += f"Libre\\n{round(porcent, 3)}%" + "}}"
-                else:
-                    porcent = ((sizePart) * 100) / TamanoDSK
-                    ContenidoPNG += f"Libre\\n{round(porcent, 3)}%" + "}}"
-                
+                porcent = ((sizePart) * 100) / TamanoDSK
+                ContenidoPNG += f"libre\\n{round(porcent, 3)}%" + "}}"
                 existeEBR = False
-
-        else:
-            porcent = ((sizePart) * 100) / TamanoDSK
-            ContenidoPNG += f"libre\\n{round(porcent, 3)}%" + "}}"
-            existeEBR = False
 
     return ContenidoPNG
 
@@ -760,189 +778,191 @@ def ReporteMBR(path, PathDSK):
 
     byte_recivido = OptenerByte_archivo(PathDSK, 0, 121)
 
-    objetoMBR = temp.set_bytes(byte_recivido)
+    if byte_recivido != None:
 
-    SeekInicio = 0
-    SeekFin = 0
-    SeekUbicacionDisco = 13
+        objetoMBR = temp.set_bytes(byte_recivido)
 
-    fecha = datetime.datetime.fromtimestamp(objetoMBR.date)
+        SeekInicio = 0
+        SeekFin = 0
+        SeekUbicacionDisco = 13
 
-    ContenidoPNG = (
-        """node [shape=plaintext];
-    // Crea un nodo con una tabla HTML de 2 columnas
-        subgraph cluster_level1 {"""
-        + f"""
-    label = "MBR";
-    mi_nodo [label=<
-        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">
+        fecha = datetime.datetime.fromtimestamp(objetoMBR.date)
+
+        ContenidoPNG = (
+            """node [shape=plaintext];
+        // Crea un nodo con una tabla HTML de 2 columnas
+            subgraph cluster_level1 {"""
+            + f"""
+        label = "MBR";
+        mi_nodo [label=<
+            <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">
+                <TR>
+                <TD colspan="2"> REPORTE DE MBR</TD>
+            </TR>
             <TR>
-            <TD colspan="2"> REPORTE DE MBR</TD>
-        </TR>
-        <TR>
-            <TD>mbr_tamaño</TD>
-            <TD>{str(objetoMBR.size)}</TD>
-        </TR>
-        <TR>
-            <TD>mbr_fecha_creacion</TD>
-            <TD>{fecha}</TD>
-        </TR>
-        <TR>
-            <TD>mbr_disk_signature</TD>
-            <TD>{str(objetoMBR.signature)}</TD>
-        </TR>"""
-    )
-    
+                <TD>mbr_tamaño</TD>
+                <TD>{str(objetoMBR.size)}</TD>
+            </TR>
+            <TR>
+                <TD>mbr_fecha_creacion</TD>
+                <TD>{fecha}</TD>
+            </TR>
+            <TR>
+                <TD>mbr_disk_signature</TD>
+                <TD>{str(objetoMBR.signature)}</TD>
+            </TR>"""
+        )
+        
 
-    contenidoPNGEBR = ""
+        contenidoPNGEBR = ""
 
-    for particion in objetoMBR.particions:
-        SeekInicio = particion.start
-        SeekFin = SeekInicio + particion.size
-        if particion.type == "P":
-            ContenidoPNG += f"""  
-                <TR>
-                    <TD colspan="2"> Particion</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_status</TD>
-                    <TD>{particion.status}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_type</TD>
-                    <TD>{particion.type}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_fit</TD>
-                    <TD>{particion.fit}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_start</TD>
-                    <TD>{str(particion.start)}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_size</TD>
-                    <TD>{str(particion.size)}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_name</TD>
-                    <TD>{particion.name}</TD>
-                </TR>"""
-
-        else:
-            # pass
-            if particion.type == "E":
-                contenidoPNGEBR = """
-                    // Crea un nodo con una tabla HTML de 2 columnas
-                    subgraph cluster_level2 {
-                    label = "EBR";
-                    mi_nodo2 [label=<
-                    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">"""
-
+        for particion in objetoMBR.particions:
+            SeekInicio = particion.start
+            SeekFin = SeekInicio + particion.size
+            if particion.type == "P":
                 ContenidoPNG += f"""  
-                <TR>
-                    <TD colspan="2"> Particion</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_status</TD>
-                    <TD>{particion.status}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_type</TD>
-                    <TD>{particion.type}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_fit</TD>
-                    <TD>{particion.fit}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_start</TD>
-                    <TD>{str(particion.start)}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_size</TD>
-                    <TD>{str(particion.size)}</TD>
-                </TR>
-                <TR>
-                    <TD>mbr_name</TD>
-                    <TD>{particion.name}</TD>
-                </TR>"""
+                    <TR>
+                        <TD colspan="2"> Particion</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_status</TD>
+                        <TD>{particion.status}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_type</TD>
+                        <TD>{particion.type}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_fit</TD>
+                        <TD>{particion.fit}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_start</TD>
+                        <TD>{str(particion.start)}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_size</TD>
+                        <TD>{str(particion.size)}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_name</TD>
+                        <TD>{particion.name}</TD>
+                    </TR>"""
 
-                existeEBR = True
-                SeekEBRNext = SeekInicio
+            else:
+                # pass
+                if particion.type == "E":
+                    contenidoPNGEBR = """
+                        // Crea un nodo con una tabla HTML de 2 columnas
+                        subgraph cluster_level2 {
+                        label = "EBR";
+                        mi_nodo2 [label=<
+                        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">"""
 
-                while existeEBR:
-                    byte_recivido = OptenerByte_archivo(
-                        PathDSK, SeekEBRNext, SeekEBRNext + 30
-                    )
-                    tmpEBR = EBR("", "", 0, 0, 0, "")
-                    objetoEBR = tmpEBR.set_bytes(byte_recivido)
+                    ContenidoPNG += f"""  
+                    <TR>
+                        <TD colspan="2"> Particion</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_status</TD>
+                        <TD>{particion.status}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_type</TD>
+                        <TD>{particion.type}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_fit</TD>
+                        <TD>{particion.fit}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_start</TD>
+                        <TD>{str(particion.start)}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_size</TD>
+                        <TD>{str(particion.size)}</TD>
+                    </TR>
+                    <TR>
+                        <TD>mbr_name</TD>
+                        <TD>{particion.name}</TD>
+                    </TR>"""
 
-                    if objetoEBR.status != "":
-                        ContenidoPNG += """  
-                            <TR>
-                                <TD colspan="2"> Particion Logica</TD>
-                            </TR> """
+                    existeEBR = True
+                    SeekEBRNext = SeekInicio
 
-                        contenidoPNGEBR += """  
-                            <TR>
-                                <TD colspan="2"> Particion</TD>
-                            </TR> """
+                    while existeEBR:
+                        byte_recivido = OptenerByte_archivo(
+                            PathDSK, SeekEBRNext, SeekEBRNext + 30
+                        )
+                        tmpEBR = EBR("", "", 0, 0, 0, "")
+                        objetoEBR = tmpEBR.set_bytes(byte_recivido)
 
-                        contenidotabla = f"""
-                            <TR>
-                                <TD>mbr_status</TD>
-                                <TD>{objetoEBR.status}</TD>
-                            </TR>
-                            <TR>
-                                <TD>mbr_next</TD>
-                                <TD>{str(objetoEBR.next)}</TD>
-                            </TR>
-                            <TR>
-                                <TD>mbr_fit</TD>
-                                <TD>{objetoEBR.fit}</TD>
-                            </TR>
-                            <TR>
-                                <TD>mbr_start</TD>
-                                <TD>{str(objetoEBR.start)}</TD>
-                            </TR>
-                            <TR>
-                                <TD>mbr_size</TD>
-                                <TD>{str(objetoEBR.size)}</TD>
-                            </TR>
-                            <TR>
-                                <TD>mbr_name</TD>
-                                <TD>{objetoEBR.name}</TD>
-                            </TR>"""
+                        if objetoEBR.status != "":
+                            ContenidoPNG += """  
+                                <TR>
+                                    <TD colspan="2"> Particion Logica</TD>
+                                </TR> """
 
-                        ContenidoPNG += contenidotabla
-                        contenidoPNGEBR += contenidotabla
+                            contenidoPNGEBR += """  
+                                <TR>
+                                    <TD colspan="2"> Particion</TD>
+                                </TR> """
 
-                        if objetoEBR.next != -1:
-                            SeekEBRNext = objetoEBR.next
+                            contenidotabla = f"""
+                                <TR>
+                                    <TD>mbr_status</TD>
+                                    <TD>{objetoEBR.status}</TD>
+                                </TR>
+                                <TR>
+                                    <TD>mbr_next</TD>
+                                    <TD>{str(objetoEBR.next)}</TD>
+                                </TR>
+                                <TR>
+                                    <TD>mbr_fit</TD>
+                                    <TD>{objetoEBR.fit}</TD>
+                                </TR>
+                                <TR>
+                                    <TD>mbr_start</TD>
+                                    <TD>{str(objetoEBR.start)}</TD>
+                                </TR>
+                                <TR>
+                                    <TD>mbr_size</TD>
+                                    <TD>{str(objetoEBR.size)}</TD>
+                                </TR>
+                                <TR>
+                                    <TD>mbr_name</TD>
+                                    <TD>{objetoEBR.name}</TD>
+                                </TR>"""
 
+                            ContenidoPNG += contenidotabla
+                            contenidoPNGEBR += contenidotabla
+
+                            if objetoEBR.next != -1:
+                                SeekEBRNext = objetoEBR.next
+
+                            else:
+                                existeEBR = False
                         else:
+                            contenidoPNGEBR += """  
+                                <TR>
+                                    <TD></TD>
+                                </TR> """
+
                             existeEBR = False
-                    else:
-                        contenidoPNGEBR += """  
-                            <TR>
-                                <TD></TD>
-                            </TR> """
 
-                        existeEBR = False
+                    contenidoPNGEBR += """    </TABLE>
+                    >]; }"""
 
-                contenidoPNGEBR += """    </TABLE>
-                >]; }"""
+            SeekUbicacionDisco += particion.get_size()
 
-        SeekUbicacionDisco += particion.get_size()
+        ContenidoPNG += (
+            """    </TABLE>
+            >]; }"""
+            + contenidoPNGEBR
+        )
 
-    ContenidoPNG += (
-        """    </TABLE>
-        >]; }"""
-        + contenidoPNGEBR
-    )
-
-    Generar_png(path, ContenidoPNG)
+        Generar_png(path, ContenidoPNG)
 
 
 def comando_mount(ListComand):
