@@ -352,7 +352,7 @@ def reporte_inode(path, PathDSK, IdExist):
                         </TR>"""
                         )
 
-                        cont += 1
+                        cont2 += 1
                 
 
                     ContenidoPNG += (
